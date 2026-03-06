@@ -12,34 +12,51 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/panier")
 @RequiredArgsConstructor
 public class PanierController {
+
     private final PanierService panierService;
 
     // GET /api/panier/1
-    public ResponseEntity<PanierResponse> getPanier(@PathVariable Long userId){
+    @GetMapping("/{userId}")
+    public ResponseEntity<PanierResponse> getPanier(
+            @PathVariable Long userId) {
         return ResponseEntity.ok(panierService.getPanier(userId));
     }
 
     // POST /api/panier/1/ajouter
     @PostMapping("/{userId}/ajouter")
-    public ResponseEntity<PanierResponse> ajouterAupanier(@PathVariable Long userId, @Valid @RequestBody PanierItemRequest request){
-        return ResponseEntity.ok(panierService.ajoutAuPanier(userId, request));
+    public ResponseEntity<PanierResponse> ajouterAuPanier(
+            @PathVariable Long userId,
+            @Valid @RequestBody PanierItemRequest request) {
+        return ResponseEntity.ok(
+                panierService.ajouterAuPanier(userId, request)
+        );
     }
+
     // PUT /api/panier/1/items/2?quantite=3
     @PutMapping("/{userId}/items/{itemId}")
     public ResponseEntity<PanierResponse> mettreAJourQuantite(
             @PathVariable Long userId,
             @PathVariable Long itemId,
-            @RequestParam Integer quantite){
+            @RequestParam Integer quantite) {
         return ResponseEntity.ok(
                 panierService.mettreAJourQuantite(userId, itemId, quantite)
         );
     }
 
     // DELETE /api/panier/1/items/2
-    @DeleteMapping("/{userId}/vider")
-    public ResponseEntity<?> viderPanier(@PathVariable Long userId){
-        panierService.videPanier(userId);
-        return ResponseEntity.ok("Panier vidé");
+    @DeleteMapping("/{userId}/items/{itemId}")
+    public ResponseEntity<PanierResponse> supprimerDuPanier(
+            @PathVariable Long userId,
+            @PathVariable Long itemId) {
+        return ResponseEntity.ok(
+                panierService.supprimerDuPanier(userId, itemId)
+        );
     }
 
+    // DELETE /api/panier/1/vider
+    @DeleteMapping("/{userId}/vider")
+    public ResponseEntity<?> viderPanier(@PathVariable Long userId) {
+        panierService.viderPanier(userId);
+        return ResponseEntity.ok("Panier vidé !");
+    }
 }

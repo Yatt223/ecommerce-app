@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+
+  # ================================
+  # BASE DE DONNÉES MySQL
+  # ================================
+  mysql:
+    image: mysql:8.0
+    container_name: ecommerce-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: ecommerce_db
+      MYSQL_USER: ecommerce_user
+      MYSQL_PASSWORD: ecommerce_pass
+    ports:
+      - "3307:3306"   # 3307 pour ne pas conflicuter avec MySQL local
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ================================
+  # BACKEND Spring Boot
+  # ================================
+  backend:
+    build: ./backend
+    container_name: ecommerce-backend
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecommerce_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ecommerce_user
+      SPRING_DATASOURCE_PASSWORD: ecommerce_pass
+      JWT_SECRET: ecommerce_secret_key_super_longue_au_moins_256_bits_pour_hs256
+      JWT_EXPIRATION: 86400000
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - ecommerce-network
+
+  # ================================
+  # FRONTEND Angular
+  # ================================
+  frontend:
+    build: ./frontend
+    container_name: ecommerce-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+    networks:
+      - ecommerce-network
+
+# ================================
+# VOLUMES
+# ================================
+volumes:
+  mysql_data:
+  uploads_data:
+
+# ================================
+# RÉSEAU
+# ================================
+networks:
+  ecommerce-network:
+    driver: bridge

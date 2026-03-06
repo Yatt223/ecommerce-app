@@ -25,7 +25,7 @@ public class CategorieService {
 
     // Récuperer une categorie par id
     public CategorieResponse getCategorieParId(Long id){
-        Categorie categorie = categorieRepository.findByNom(id)
+        Categorie categorie = categorieRepository.findById(id)
                 .orElseThrow(()->
                         new RuntimeException("Catégorie introuvable : " + id)
                 );
@@ -34,7 +34,7 @@ public class CategorieService {
 
     // Créé une nouvelle categorie
     public  CategorieResponse creerCategorie(CategorieRequest request){
-        if(categorieRepository.existByNom(request.getNom())){
+        if(categorieRepository.existsByNom(request.getNom())){
             throw new RuntimeException("Cette catégorie existe déjà !");
         }
 

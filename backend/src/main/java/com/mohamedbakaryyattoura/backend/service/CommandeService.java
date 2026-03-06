@@ -40,7 +40,7 @@ public class CommandeService {
         Commande commande = new Commande();
         commande.setUser(user);
         commande.setNumero(genererNumero());
-        commande.setStaut(Commande.StatutCommande.EN_ATTENTE);
+        commande.setStatut(Commande.StatutCommande.EN_ATTENTE);
 
         // Creer les lignes de commande
         BigDecimal total = BigDecimal.ZERO;
@@ -75,7 +75,7 @@ public class CommandeService {
         commande.setTotal(total);
         commandeRepository.save(commande);
         // vide le panier après commande
-        panierService.videPanier(userId);
+        panierService.viderPanier(userId);
         return toResponse(commande);
 
     }
@@ -83,7 +83,7 @@ public class CommandeService {
     public List<CommandeResponse> getCommandesUser(Long userId){
         return commandeRepository.findByUserIdOrderByDateCommandeDesc(userId)
                 .stream()
-                .map(this::toReponse)
+                .map(this::toResponse)
                 .collect(Collectors.toList());
     }
     // Détail d'une commande
@@ -95,13 +95,15 @@ public class CommandeService {
         return toResponse(commande);
     }
 
+
+
     // change le statut d'une commande (admin)
     public  CommandeResponse changerStatut(Long id, Commande.StatutCommande statut){
         Commande commande = commandeRepository.findById(id)
                 .orElseThrow(()->
                         new RuntimeException("Commande introuvable : " + id)
                 );
-        commande.setStaut(statut);
+        commande.setStatut(statut);
 
         if(statut == Commande.StatutCommande.PAYEE){
             commande.setDatePaiement(LocalDateTime.now());
@@ -134,7 +136,7 @@ public class CommandeService {
         CommandeResponse response = new CommandeResponse();
         response.setId(commande.getId());
         response.setNumero(commande.getNumero());
-        response.setStatut(commande.getStaut().name());
+        response.setStatut(commande.getStatut().name());
         response.setTotal(commande.getTotal());
         response.setDateCommande(commande.getDateCommande());
         response.setDatePaiement(commande.getDatePaiement());
